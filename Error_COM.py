@@ -7,11 +7,11 @@ import win32com.client as com
 
 
 ## Connecting the COM Server => Open a new Vissim Window:
-Vissim = com.gencache.EnsureDispatch("Vissim.Vissim") #
+#Vissim = com.gencache.EnsureDispatch("Vissim.Vissim") #
 # Vissim = com.Dispatch("Vissim.Vissim") # once the cache has been generated, its faster to call Dispatch which also creates the connection to Vissim.
 # If you have installed multiple Vissim Versions, you can open a specific Vissim version adding the version number
-# Vissim = com.gencache.EnsureDispatch("Vissim.Vissim.10") # Vissim 10
-# Vissim = com.gencache.EnsureDispatch("Vissim.Vissim.22") # Vissim 2022
+Vissim = com.gencache.EnsureDispatch("Vissim.Vissim.22") # Vissim 10
+#Vissim = com.gencache.EnsureDispatch("Vissim.Vissim.22") # Vissim 2022
 
 
 ### for advanced users, with this command you can get all Constants from PTV Vissim with this command (not required for the example)
@@ -29,36 +29,56 @@ Vissim.LoadNet(Filename, flag_read_additionally)
 Filename = os.path.join(Path_of_COM_Basic_Commands_network, 'COM Basic Commands.layx')
 Vissim.LoadLayout(Filename)
 
+#Vissim.Simulation.RunContinuous()
+
+#Random_Seed = 42
+#Vissim.Simulation.SetAttValue('RandSeed', Random_Seed)
+
+
+Sim_break_at = 50 # simulation second [s]
+Vissim.Simulation.SetAttValue('SimBreakAt', Sim_break_at)
+Vissim.Simulation.RunContinuous() # start the simulation until SimBreakAt (198s)
+
+# Get the state of a signal head:
+SH_number = 1 # SH = SignalHead
+State_of_SH = Vissim.Net.SignalHeads.ItemByKey(SH_number).AttValue('SigState') # possible output see COM Help: SignalizationState Enumeration
+Vissim.Log(16384, 'Actual state of SignalHead(%d) is: %s' % (SH_number, State_of_SH))
+print('Actual state of SignalHead(%d) is: %s' % (SH_number, State_of_SH))
+
+
 # Set a signal controller program:
 SC_number = 1 # SC = SignalController
 SignalController = Vissim.Net.SignalControllers.ItemByKey(SC_number)
 new_signal_programm_number = 2
 SignalController.SetAttValue('ProgNo', new_signal_programm_number)
-
+print('Done modifying progno')
 # Set the state of a signal controller:
 # Note: Once a state of a signal group is set, the attribute "ContrByCOM" is automatically set to True. Meaning the signal group will keep this state until another state is set by COM or the end of the simulation
 # To switch back to the defined signal controller, set the attribute signal "ContrByCOM" to False (example see below).
 SC_number = 1 # SC = SignalController
-SG_number = 2 # SG = SignalGroup
+SG_number = 1 # SG = SignalGroup
 SignalController = Vissim.Net.SignalControllers.ItemByKey(SC_number)
 SignalGroup = SignalController.SGs.ItemByKey(SG_number)
+
 new_state = "GREEN" # possible values 'GREEN', 'RED', 'AMBER', 'REDAMBER' and more, see COM Help: SignalizationState Enumeration
 SignalGroup.SetAttValue("SigState", new_state)
+print('happy ending')
+Vissim.Simulation.RunContinuous() # start the simulation until SimBreakAt (198s)
 
-
-#____________________________________________________________________________________________
-# GetMultipleAttributes     Read multiple attributes of all objects:
-Attributes1 = ("Name", "Length2D")
-Name_Length_of_Links = Vissim.Net.Links.GetMultipleAttributes(Attributes1)
-print(Name_Length_of_Links)
-
-SignalGroup.GetMultiAttValues("SigState", 3)
-
-
-Vissim.Net.SignalControllers.ItemByKey(SC_number).SGs.ItemByKey(SG_number).GetMultiAttValues()
-SignalGroup = 
-new_state = "GREEN" # possible values 'GREEN', 'RED', 'AMBER', 'REDAMBER' and more, see COM Help: SignalizationState Enumeration
-SignalGroup
-
-
-All_Vehicles = Vissim.Net.Vehicles.GetAll() 
+#
+##____________________________________________________________________________________________
+## GetMultipleAttributes     Read multiple attributes of all objects:
+#Attributes1 = ("Name", "Length2D")
+#Name_Length_of_Links = Vissim.Net.Links.GetMultipleAttributes(Attributes1)
+#print(Name_Length_of_Links)
+#
+#SignalGroup.GetMultiAttValues("SigState", 3)
+#
+#
+#Vissim.Net.SignalControllers.ItemByKey(SC_number).SGs.ItemByKey(SG_number).GetMultiAttValues()
+##SignalGroup = 
+#new_state = "GREEN" # possible values 'GREEN', 'RED', 'AMBER', 'REDAMBER' and more, see COM Help: SignalizationState Enumeration
+#SignalGroup
+#
+#
+#All_Vehicles = Vissim.Net.Vehicles.GetAll() 
